@@ -1,0 +1,202 @@
+:root {
+  --bg: #0e1014;
+  --surface: #16191f;
+  --surface-2: #1d2128;
+  --surface-3: #262b34;
+  --border: #2a2f39;
+  --text: #e9ebf0;
+  --muted: #8a91a0;
+  --red: #ef4444;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --yellow: #eab308;
+  --radius: 14px;
+  --gap: 12px;
+  /* Keys grow with the viewport width */
+  --key-height: clamp(48px, 13vw, 60px);
+  --key-font: clamp(17px, 4.6vw, 21px);
+  --key-gap: clamp(4px, 1.4vw, 8px);
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+           max(24px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- Layout ---------- */
+.app {
+  width: 100%;
+  max-width: 560px;
+  display: grid;
+  gap: var(--gap);
+  align-content: start;
+}
+
+/* Desktop keeps the same single column, just with more breathing room */
+@media (min-width: 900px) {
+  body { padding: 48px 24px; }
+}
+
+/* ---------- Card ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.card__title {
+  font-size: 13px;
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.alert {
+  background: #3b1d1d;
+  border: 1px solid #7f1d1d;
+  color: #fecaca;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+/* ---------- Buttons ---------- */
+button {
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  border: none;
+  background: none;
+  touch-action: manipulation;
+}
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+.btn {
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform .06s, background .15s;
+}
+.btn:not(:disabled):active { transform: scale(.97); }
+
+.btn--primary { background: var(--blue); color: #fff; }
+.btn--secondary { background: var(--surface-3); }
+.btn--send { background: var(--green); color: #052e14; }
+.btn--danger { background: transparent; color: var(--red); border: 1px solid #5a2328; }
+
+/* ---------- Connection ---------- */
+.connection { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.connection__status { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.connection__label { font-weight: 600; font-size: 15px; }
+.connection__detail { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+.status-dot--connected { background: var(--blue); }
+.status-dot--connecting { background: var(--yellow); }
+
+/* ---------- Display ---------- */
+.display { background: #000; border-color: #000; padding: 14px 14px 10px; }
+.display__matrix { display: block; width: 100%; aspect-ratio: 32 / 7; }
+.display__footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.display__counter { font-variant-numeric: tabular-nums; }
+.display__counter--full { color: var(--red); }
+
+.led { display: inline-flex; align-items: center; gap: 6px; }
+.led__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.led--green .led__dot { background: var(--green); }
+.led--off .led__dot { background: #333; }
+
+/* ---------- Keyboard ---------- */
+.controls { padding: clamp(10px, 3vw, 16px); }
+
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: var(--key-gap);
+}
+.key {
+  height: var(--key-height);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: var(--key-font);
+  font-weight: 600;
+  min-width: 0;
+  padding: 0;
+  user-select: none;
+}
+.key:hover { background: var(--surface-3); }
+.key:active { background: var(--blue); border-color: var(--blue); }
+.key--wide,
+.key--space { color: var(--muted); font-size: calc(var(--key-font) * .75); font-weight: 500; }
+.key--wide { grid-column: span 3; }
+.key--space { grid-column: span 7; }
+
+/* ---------- Actions ---------- */
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: var(--key-gap);
+  margin-top: calc(var(--key-gap) * 2);
+}
+.actions .btn { height: var(--key-height); font-size: calc(var(--key-font) * .85); }
+
+/* ---------- Recent ---------- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chip:hover { border-color: var(--blue); }
+
+/* ---------- Activity ---------- */
+.activity__summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.activity__list {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  max-height: 160px;
+  overflow-y: auto;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.activity__list li { padding: 3px 0; }
+.activity__time { margin-right: 8px; opacity: .6; }
+
+/* Very narrow phones: stack the connect button under the status */
+@media (max-width: 340px) {
+  .connection { flex-direction: column; align-items: stretch; }
+}

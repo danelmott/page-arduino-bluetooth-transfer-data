@@ -3,342 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e1014">
 <title>BLE Mott</title>
-<style>
-  :root {
-    --bg: #0f1115;
-    --panel: #181b22;
-    --panel-2: #20242d;
-    --borde: #2c313c;
-    --texto: #e8eaf0;
-    --muted: #8a91a0;
-    --rojo: #ef4444;
-    --verde: #22c55e;
-    --azul: #3b82f6;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--texto);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 24px 16px;
-  }
-  main { width: 100%; max-width: 380px; }
-  h1 { font-size: 22px; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
-
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--borde);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-
-  .estado { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .punto {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--muted);
-    transition: background .2s, box-shadow .2s;
-  }
-  .punto.conectado { background: var(--azul); box-shadow: 0 0 10px var(--azul); }
-  .punto.conectando { background: #eab308; }
-  #textoEstado { font-size: 15px; }
-
-  button {
-    font: inherit;
-    border: 1px solid var(--borde);
-    background: var(--panel-2);
-    color: var(--texto);
-    border-radius: 12px;
-    padding: 14px;
-    cursor: pointer;
-    transition: transform .05s, background .15s, opacity .15s;
-  }
-  button:active { transform: scale(.97); }
-  button:disabled { opacity: .4; cursor: not-allowed; }
-  .primario { width: 100%; background: var(--azul); border-color: var(--azul); font-weight: 600; }
-
-  .pantalla {
-    background: #000;
-    border-radius: 12px;
-    padding: 18px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-    min-height: 82px;
-  }
-  #display {
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: 40px;
-    color: var(--rojo);
-    letter-spacing: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  #display.vacio { color: #3a3f4a; }
-  .led {
-    width: 22px; height: 22px; border-radius: 50%;
-    flex-shrink: 0;
-    background: var(--rojo);
-    box-shadow: 0 0 14px var(--rojo);
-    transition: background .2s, box-shadow .2s;
-  }
-  .led.verde { background: var(--verde); box-shadow: 0 0 14px var(--verde); }
-  .led.apagado { background: #333; box-shadow: none; }
-
-  #texto {
-    width: 100%;
-    font: inherit;
-    font-size: 18px;
-    background: var(--panel-2);
-    color: var(--texto);
-    border: 1px solid var(--borde);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    outline: none;
-  }
-  #texto:focus { border-color: var(--azul); }
-
-  .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .teclado button { font-size: 22px; padding: 16px 0; }
-  .acciones { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-top: 8px; }
-  .borrar { color: var(--rojo); }
-  .enviar { background: var(--verde); border-color: var(--verde); color: #04210f; font-weight: 600; }
-
-  #log {
-    font-family: ui-monospace, Menlo, monospace;
-    font-size: 12px;
-    color: var(--muted);
-    max-height: 120px;
-    overflow-y: auto;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  #log li { padding: 2px 0; }
-  .aviso {
-    background: #3b1d1d;
-    border: 1px solid #7f1d1d;
-    color: #fecaca;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 14px;
-    margin-bottom: 16px;
-    display: none;
-  }
-</style>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<main>
-  <h1>BLE Mott</h1>
-  <p class="sub">Envía números o palabras a la matriz del Arduino por Bluetooth</p>
-
-  <div class="aviso" id="aviso">
+<main class="app">
+  <div class="alert" id="unsupportedAlert" hidden>
     Este navegador no soporta Web Bluetooth. Usa Chrome o Edge (en Linux activa
     <b>chrome://flags → Experimental Web Platform features</b>).
   </div>
 
-  <section class="card">
-    <div class="estado">
-      <div class="punto" id="punto"></div>
-      <span id="textoEstado">Desconectado</span>
+  <section class="card connection">
+    <div class="connection__status">
+      <span class="status-dot" id="statusDot"></span>
+      <div>
+        <div class="connection__label" id="statusLabel">Desconectado</div>
+        <div class="connection__detail" id="statusDetail"></div>
+      </div>
     </div>
-    <button class="primario" id="btnConectar">Conectar</button>
+    <button class="btn btn--primary" id="connectButton">Conectar</button>
   </section>
 
-  <section class="card">
-    <div class="pantalla">
-      <span id="display" class="vacio">---</span>
-      <div class="led" id="led" title="LED de estado"></div>
-    </div>
-
-    <input id="texto" type="text" maxlength="20" autocomplete="off" autocapitalize="characters"
-           placeholder="Escribe una palabra o número">
-
-    <div class="teclado" id="teclado">
-      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
-      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
-      <button data-k="-">−</button><button data-k="0">0</button><button data-k="del">⌫</button>
-    </div>
-    <div class="acciones">
-      <button class="borrar" id="btnBorrar">Borrar</button>
-      <button class="enviar" id="btnEnviar">Enviar</button>
+  <section class="card display">
+    <canvas class="display__matrix" id="matrix" aria-label="Vista previa de la matriz"></canvas>
+    <div class="display__footer">
+      <span class="display__counter" id="counter">0/20</span>
+      <span class="led led--off" id="led"><i class="led__dot"></i><span id="ledLabel">Sin conexión</span></span>
     </div>
   </section>
 
-  <section class="card">
-    <ul id="log"></ul>
+  <section class="card controls">
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="actions">
+      <button class="btn btn--danger" id="clearMatrixButton">Borrar matriz</button>
+      <button class="btn btn--send" id="sendButton">Enviar</button>
+    </div>
   </section>
+
+  <section class="card recent" id="recentCard" hidden>
+    <h2 class="card__title">Recientes</h2>
+    <div class="chips" id="recentList"></div>
+  </section>
+
+  <details class="card activity">
+    <summary class="activity__summary">Actividad</summary>
+    <ul class="activity__list" id="activityList"></ul>
+  </details>
 </main>
 
-<script>
-  // ---- Debe coincidir con el Arduino ----
-  const NOMBRE      = "ble-mott";
-  const SERVICE     = "19b10000-e8f2-537e-4f6c-d104768a1214";
-  const NUMERO_UUID = "19b10002-e8f2-537e-4f6c-d104768a1214";
-  const MAX_CARACTERES = 20;
-
-  const $ = (id) => document.getElementById(id);
-  let device = null;
-  let numeroChar = null;
-  let entrada = "";
-  let ocupado = false;
-
-  // ---------- Interfaz ----------
-  function log(msg) {
-    const li = document.createElement("li");
-    const hora = new Date().toLocaleTimeString();
-    li.textContent = `${hora}  ${msg}`;
-    $("log").prepend(li);
-  }
-
-  function setEstado(estado) {
-    const punto = $("punto");
-    punto.className = "punto " + (estado === "conectado" ? "conectado" : estado === "conectando" ? "conectando" : "");
-    $("textoEstado").textContent =
-      estado === "conectado" ? `Conectado a ${device?.name ?? NOMBRE}` :
-      estado === "conectando" ? "Conectando..." : "Desconectado";
-    $("btnConectar").textContent = estado === "conectado" ? "Desconectar" : "Conectar";
-    const habilitado = estado === "conectado";
-    $("btnEnviar").disabled = !habilitado;
-    $("btnBorrar").disabled = !habilitado;
-    $("led").classList.toggle("apagado", !habilitado);
-  }
-
-  function pintarEntrada() {
-    const d = $("display");
-    d.textContent = entrada || "---";
-    d.classList.toggle("vacio", !entrada);
-    if ($("texto").value !== entrada) $("texto").value = entrada;
-  }
-
-  function setLed(color) {
-    $("led").classList.toggle("verde", color === "verde");
-  }
-
-  // ---------- Bluetooth ----------
-  async function conectar() {
-    try {
-      setEstado("conectando");
-      device = await navigator.bluetooth.requestDevice({
-        filters: [{ name: NOMBRE }],
-        optionalServices: [SERVICE]
-      });
-      device.addEventListener("gattserverdisconnected", alDesconectar);
-
-      const server  = await device.gatt.connect();
-      const service = await server.getPrimaryService(SERVICE);
-      numeroChar    = await service.getCharacteristic(NUMERO_UUID);
-
-      setEstado("conectado");
-      setLed("rojo");
-      log("Conectado");
-    } catch (err) {
-      setEstado("desconectado");
-      if (err.name !== "NotFoundError") log("Error: " + err.message);
-      else log("Conexión cancelada");
-    }
-  }
-
-  function desconectar() {
-    if (device?.gatt.connected) device.gatt.disconnect();
-  }
-
-  function alDesconectar() {
-    numeroChar = null;
-    setEstado("desconectado");
-    log("Desconectado");
-  }
-
-  async function enviar(texto) {
-    if (!numeroChar || ocupado) return;
-    ocupado = true;
-    try {
-      await numeroChar.writeValue(new TextEncoder().encode(texto));
-      log("Enviado: " + texto);
-      return true;
-    } catch (err) {
-      log("Error al enviar: " + err.message);
-      return false;
-    } finally {
-      ocupado = false;
-    }
-  }
-
-  // ---------- Eventos ----------
-  $("btnConectar").addEventListener("click", () => {
-    device?.gatt.connected ? desconectar() : conectar();
-  });
-
-  $("teclado").addEventListener("click", (e) => {
-    const k = e.target.dataset?.k;
-    if (!k) return;
-    if (k === "del") entrada = entrada.slice(0, -1);
-    else if (k === "-") entrada = entrada.startsWith("-") ? entrada.slice(1) : "-" + entrada;
-    else if (entrada.length < MAX_CARACTERES) entrada += k;
-    pintarEntrada();
-  });
-
-  $("texto").addEventListener("input", () => {
-    entrada = $("texto").value.slice(0, MAX_CARACTERES);
-    pintarEntrada();
-  });
-
-  $("texto").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") $("btnEnviar").click();
-  });
-
-  $("btnEnviar").addEventListener("click", async () => {
-    entrada = entrada.trim();
-    pintarEntrada();
-    if (!entrada || entrada === "-") return;
-    const ok = await enviar(entrada);
-    if (ok) {
-      setLed("verde");
-      // El Arduino vuelve a rojo cuando un número largo termina de pasar
-      if (entrada.replace("-", "").length > 3 || entrada.length > 3) {
-        const ms = (entrada.length + 4) * 5 * 80;
-        setTimeout(() => setLed("rojo"), ms);
-      }
-    }
-  });
-
-  $("btnBorrar").addEventListener("click", async () => {
-    const ok = await enviar("borrar");
-    if (ok) {
-      entrada = "";
-      pintarEntrada();
-      setLed("rojo");
-    }
-  });
-
-  // Teclado físico del PC
-  // (si el campo de texto tiene el foco, él mismo maneja las teclas)
-  document.addEventListener("keydown", (e) => {
-    if (e.target === $("texto") || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.key.length === 1 && e.key !== "-" && entrada.length < MAX_CARACTERES) entrada += e.key;
-    else if (e.key === "Backspace") entrada = entrada.slice(0, -1);
-    else if (e.key === "-") entrada = entrada.startsWith("-") ? entrada.slice(1) : "-" + entrada;
-    else if (e.key === "Enter") return $("btnEnviar").click();
-    else return;
-    pintarEntrada();
-  });
-
-  // ---------- Inicio ----------
-  if (!("bluetooth" in navigator)) {
-    $("aviso").style.display = "block";
-    $("btnConectar").disabled = true;
-  }
-  setEstado("desconectado");
-</script>
+<script src="js/config.js"></script>
+<script src="js/DotFont.js"></script>
+<script src="js/LedMatrix.js"></script>
+<script src="js/BleClient.js"></script>
+<script src="js/Keyboard.js"></script>
+<script src="js/RecentList.js"></script>
+<script src="js/ActivityLog.js"></script>
+<script src="js/App.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
